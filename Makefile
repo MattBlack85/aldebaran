@@ -11,6 +11,7 @@ ACTIVATE_VENV = pipenv run
 	isort-check \
 	nuke-venv \
 	start-aldebaran \
+	start-aldebaran-local \
 	test \
 
 black-format:
@@ -48,6 +49,10 @@ nuke-venv:
 start-aldebaran:
 	@export PGPASSWORD=$$DB_PASSWORD && psql -U $$DB_USER --port $$DB_PORT -h $$DB_HOST $$DB_NAME -a -f ./covid.sql
 	@uvicorn aldebaran.ignition:app --host 0.0.0.0 --port 8080 --log-config logconfig.ini
+
+start-aldebaran-local:
+	@export PGPASSWORD=$$DB_PASSWORD && psql -U $$DB_USER --port $$DB_PORT -h $$DB_HOST $$DB_NAME -a -f ./covid.sql
+	@uvicorn aldebaran.ignition:app --host 0.0.0.0 --port 8080
 
 test:
 	@$(ACTIVATE_VENV) pytest -s
