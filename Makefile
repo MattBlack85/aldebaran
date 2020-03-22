@@ -27,11 +27,15 @@ cheeseshop:
 
 db-up:
 	@docker run -d --name aldebaran_test -p 9432:5432 -e POSTGRES_DB=covid_test -e POSTGRES_USER=aldebaran -e POSTGRES_PASSWORD=password --rm timescale/timescaledb:latest-pg11
-	@sleep 5 && psql -U aldebaran --port 9432 -h 0.0.0.0 covid_test -a -f ./covid.sql
-	@psql -U aldebaran --port 9432 -h 0.0.0.0 covid_test -c "\copy corona FROM ./tests/testdb.csv CSV;"
 
 db-down:
 	@docker stop aldebaran_test
+
+db-init:
+	@sleep 5 && psql -U aldebaran --port 9432 -h 0.0.0.0 covid_test -a -f ./covid.sql
+	@psql -U aldebaran --port 9432 -h 0.0.0.0 covid_test -c "\copy corona FROM ./tests/testdb.csv CSV;"
+
+db-setup: db-down db-up db-init
 
 isort:
 	@$(ACTIVATE_VENV) isort . --recursive -tc
@@ -54,5 +58,8 @@ start-aldebaran-local:
 	@export PGPASSWORD=$$DB_PASSWORD && psql -U $$DB_USER --port $$DB_PORT -h $$DB_HOST $$DB_NAME -a -f ./covid.sql
 	@uvicorn aldebaran.ignition:app --host 0.0.0.0 --port 8080
 
-test: db-down db-up
+test: db-setup
+	@$(ACTIVATE_VENV) pytest -s
+
+test-circle: db-init
 	@$(ACTIVATE_VENV) pytest -s

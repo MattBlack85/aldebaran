@@ -6,6 +6,14 @@ executors:
     docker:
       - image: circleci/python:3.8
 
+      - image: timescale/timescaledb:latest-pg11
+        environment:
+          POSTGRES_DB: covid_test
+          POSTGRES_USER: aldebaran
+          POSTGRES_PASSWORD: password
+          PGPORT: 9432
+          
+
 jobs:
   build-and-test:
     executor: baseline_executor
@@ -21,6 +29,9 @@ jobs:
           key: v1-aldebaran-{{ checksum "Pipfile.lock" }}
 
       - run:
+          name: Install psql
+          command: sudo apt-get update && sudo apt-get install -y postgresql postgresql-contrib
+      - run:
           name: install dependencies
           command:  |
             make cheeseshop
@@ -31,7 +42,7 @@ jobs:
             - "/usr/local/lib/python3.8/site-packages"
 
       - run:
-          command: make tests
+          command: make test-circle
           name: Test
 
         
