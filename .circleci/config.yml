@@ -1,0 +1,94 @@
+version: 2.1
+
+executors:
+  baseline_executor:
+    working_directory: ~/app
+    docker:
+      - image: circleci/python:3.8
+
+jobs:
+  build-and-test:
+    executor: baseline_executor
+    steps:
+      - checkout
+      - run:
+          name: set circleci user access rights
+          command: |
+            sudo chown -R circleci:circleci /usr/local/
+            sudo chown -R circleci:circleci /usr/local/lib/python3.8/site-packages
+
+      - restore_cache:
+          key: v1-aldebaran-{{ checksum "Pipfile.lock" }}
+
+      - run:
+          name: install dependencies
+          command:  |
+            make cheeseshop
+
+      - save_cache:
+          key: v1-ui-tests-{{ checksum "Pipfile.lock" }}
+          paths:
+            - "/usr/local/lib/python3.8/site-packages"
+
+      - run:
+          command: make tests
+          name: Test
+
+        
+  black:
+    executor: baseline_executor
+    steps:
+      - checkout
+      - run:
+          command: |
+            sudo chown -R circleci:circleci /usr/local/bin
+            sudo chown -R circleci:circleci /usr/local/lib/python3.8/site-packages
+            
+      - restore_cache:
+          keys:
+            - v1-aldebaran-{{ checksum "Pipfile.lock" }}
+
+      - run:
+          name: install dependencies
+          command: make cheeseshop
+
+      - save_cache:
+          paths:
+            - "/usr/local/lib/python3.8/site-packages"
+          key: v1-aldebaran-{{ checksum "Pipfile.lock" }}
+
+      - run: make black-format-check
+
+
+
+  isort:
+    executor: baseline_executor
+    steps:
+      - checkout
+      - run:
+          command: |
+            sudo chown -R circleci:circleci /usr/local/bin
+            sudo chown -R circleci:circleci /usr/local/lib/python3.8/site-packages
+
+      - restore_cache:
+          keys:
+            - v1-aldebaran-{{ checksum "Pipfile.lock" }}
+
+      - run:
+          name: install dependencies
+          command: make cheeseshop
+
+      - save_cache:
+          paths:
+            - "/usr/local/lib/python3.8/site-packages"
+          key: v1-aldebaran-{{ checksum "Pipfile.lock" }}
+
+      - run: make isort-check
+
+
+workflows:
+  main:
+    jobs:
+      - build-and-test
+      - isort
+      - black
