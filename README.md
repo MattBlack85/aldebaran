@@ -1,5 +1,7 @@
 # aldebaran
-covid-19 pandemic JSON API
+covid-19 pandemic JSON API.
+
+Do you have any idea? Want more things from the API? Join on slack => https://aldebaran-group.slack.com/join/shared_invite/zt-cyh7edf9-LsKe_Y1Sci_ppJFIZqJbYw
 
 ## hard dependencies
 The only hard dependencies required are `pipenv` and `direnv`(https://direnv.net/)
